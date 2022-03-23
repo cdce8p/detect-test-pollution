@@ -22,7 +22,7 @@ PYTEST_OPTIONS = (
     # disable known test-randomization plugins
     '-p', 'no:randomly',
     # we don't read the output at all
-    '--quiet', '--quiet',
+    '--quiet', '--quiet', '--disable-warnings',
 )
 
 
@@ -75,7 +75,7 @@ def _run_pytest(*args: str) -> None:
     # XXX: this is potentially difficult to debug? maybe --verbose?
     subprocess.check_call(
         (sys.executable, '-mpytest', *PYTEST_OPTIONS, *args),
-        stdout=subprocess.DEVNULL,
+        # stdout=subprocess.DEVNULL,
     )
 
 
