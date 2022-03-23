@@ -153,6 +153,7 @@ def _fuzz(
         testids: list[str],
         cmd_tests: list[str] | None,
         cmd_testids_filename: str | None,
+        runs: int = 20,
 ) -> int:
     # make shuffling "deterministic"
     r = random.Random()
@@ -163,7 +164,7 @@ def _fuzz(
         results_json = os.path.join(tmpdir, 'results.json')
 
         i = 0
-        while True:
+        while i < runs:
             i += 1
             print(f'run {i}...')
 
@@ -195,6 +196,9 @@ def _fuzz(
             cmd = _format_cmd(victim, cmd_tests, cmd_testids_filename)
             print(f'try `{cmd}`!')
             return 1
+
+    print(f'Did not find a failing test in {runs} runs')
+    return 0
 
 
 def _bisect(
@@ -279,6 +283,12 @@ def main(argv: Sequence[str] | None = None) -> int:
         '--testids-file',
         help='optional pre-discovered test ids (one per line)',
     )
+
+    parser.add_argument(
+        '--runs',
+        type=int,
+        help='max runs for fuzz',
+    )
     args = parser.parse_args(argv)
 
     # step 1: discover all the tests
@@ -293,7 +303,13 @@ def main(argv: Sequence[str] | None = None) -> int:
     testpaths = _individual_testpaths(testids)
 
     if args.fuzz:
-        return _fuzz(testpaths, testids, args.tests, args.testids_file)
+        return _fuzz(
+            testpaths,
+            testids,
+            args.tests,
+            args.testids_file,
+            args.runs,
+        )
     else:
         return _bisect(testpaths, args.failing_test, testids)
 
